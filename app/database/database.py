@@ -1,4 +1,5 @@
 import asyncpg
+import os
 
 connection = None
 
@@ -7,11 +8,11 @@ async def connect():
     global connection
 
     connection = await asyncpg.connect(
-        host="localhost",
-        port=5432,
-        user="postgres",
-        password="1111",
-        database="support_bot",
+    host=os.getenv("DB_HOST"),
+    port=int(os.getenv("DB_PORT")),
+    user=os.getenv("DB_USER"),
+    password=os.getenv("DB_PASSWORD"),
+    database=os.getenv("DB_NAME"),
     )
 
     print("✅ PostgreSQL connected")

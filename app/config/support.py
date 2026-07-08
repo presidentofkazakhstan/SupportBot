@@ -1,1 +1,3 @@
-SUPPORT_CHAT_ID = -5299949441
+import os
+
+SUPPORT_CHAT_ID = int(os.getenv("SUPPORT_CHAT_ID"))

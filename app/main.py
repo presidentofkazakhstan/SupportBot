@@ -1,5 +1,7 @@
 import asyncio
 import logging
+from dotenv import load_dotenv
+load_dotenv()
 
 from bot.bot import bot
 from bot.dispatcher import dp
