@@ -17,14 +17,19 @@ router = Router()
 
 @router.message()
 async def all_messages(message: Message):
-    print("=" * 50)
-    print(f"Chat ID: {message.chat.id}")
-    print(f"Chat: {message.chat.title}")
-    print(f"User ID: {message.from_user.id}")
-    print(f"User: {message.from_user.full_name}")
-    print(f"Text: {message.text}")
-    print("=" * 50)
+    if (
+        message.new_chat_members
+        or message.left_chat_member
+        or message.group_chat_created
+        or message.supergroup_chat_created
+        or message.channel_chat_created
+        or message.pinned_message
+    ):
+        return
 
+    if not (message.text or message.caption):
+        return
+    
     chat_id = message.chat.id
     user_id = message.from_user.id
 
