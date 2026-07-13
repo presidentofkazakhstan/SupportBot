@@ -8,7 +8,7 @@ from database.database import (
 )
 from database.database import get_open_ticket
 from config.employees import SUPPORT_USERS
-
+from config.support import IGNORE_USERS
 from database.database import has_open_ticket
 from database.database import get_first_response_seconds
 
@@ -32,6 +32,9 @@ async def all_messages(message: Message):
     
     chat_id = message.chat.id
     user_id = message.from_user.id
+
+    if user_id in IGNORE_USERS:
+        return
 
     is_support = user_id in SUPPORT_USERS
 
