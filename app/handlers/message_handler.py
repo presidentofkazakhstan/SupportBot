@@ -75,7 +75,7 @@ async def all_messages(message: Message):
     ):
         return
 
-    if not (message.text or message.caption):
+    if not (message.text or message.caption or message.voice):
         return
     
     chat_id = message.chat.id
@@ -129,10 +129,19 @@ async def all_messages(message: Message):
                 await update_last_activity(ticket["id"])
             print("💬 Сообщение в существующем обращении")
         else:
+            if message.text:
+                first_message = message.text
+            elif message.caption:
+                first_message = message.caption
+            elif message.voice:
+                first_message = "🎤 Голосовое сообщение"
+            else:
+                first_message = "Без текста"
+
             ticket_id = await create_ticket(
                 chat_id,
                 message.chat.title,
-                message.text or "Без текста"
+                first_message
             )
 
-            print("🆕 Новое обращение")
+            print(f"🆕 Новое обращение | Клуб: {message.chat.title}")
