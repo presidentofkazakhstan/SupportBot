@@ -29,10 +29,14 @@ async def statistics(message: Message):
         return
 
     employees, sla_violations, total_tickets = await get_statistics()
+    sla_without_violations = total_tickets - sla_violations
 
     text = "📊 Статистика за текущий месяц\n\n"
 
     text += f"🎫 Всего обращений: {total_tickets}\n\n"
+
+    text += f"🟢 Без нарушения: {sla_without_violations}\n"
+    text += f"🔴 Нарушений: {sla_violations}\n\n"
 
     text += "👥 Ответы сотрудников:\n"
 
@@ -57,9 +61,6 @@ async def statistics(message: Message):
             f"{employee['answered_tickets']}\n"
             f"   ⏱ Средний ответ: {avg_time}\n\n"
         )
-    
-    text += f"\n🔴 Нарушений: {sla_violations}"
-
     await message.answer(text)
 
 @router.message()
