@@ -1,5 +1,6 @@
 from aiogram import Router
 from aiogram.types import Message
+from aiogram.filters import Command
 
 from database.database import (
     create_ticket,
@@ -12,9 +13,38 @@ from config.support import IGNORE_USERS
 from database.database import has_open_ticket
 from database.database import get_first_response_seconds
 from database.database import get_employee_by_telegram_id
+from database.database import get_statistics
+from config.employees import SUPPORT_USERS
+from config.support import SUPPORT_CHAT_ID
 
 router = Router()
 
+@router.message(Command("stats"))
+async def statistics(message: Message):
+
+    if message.chat.id != SUPPORT_CHAT_ID:
+        return
+
+    if message.from_user.id not in SUPPORT_USERS:
+        return
+
+    employees, sla_violations, total_tickets = await get_statistics()
+
+    text = "📊 Статистика за текущий месяц\n\n"
+
+    text += f"🎫 Всего обращений: {total_tickets}\n\n"
+
+    text += "👥 Ответы сотрудников:\n"
+
+    for i, employee in enumerate(employees, start=1):
+        text += (
+            f"{i}. {employee['full_name']} — "
+            f"{employee['answered_tickets']}\n"
+        )
+
+    text += f"\n🔴 Нарушений: {sla_violations}"
+
+    await message.answer(text)
 
 @router.message()
 async def all_messages(message: Message):

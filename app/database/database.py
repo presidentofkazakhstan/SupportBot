@@ -187,3 +187,41 @@ async def get_employee_by_telegram_id(telegram_id):
             """,
             telegram_id,
         )
+    
+async def get_statistics():
+    async with pool.acquire() as conn:
+
+        employees = await conn.fetch(
+            """
+            SELECT
+                e.id,
+                e.full_name,
+                e.username,
+                COUNT(t.id) AS answered_tickets
+            FROM employees e
+            LEFT JOIN tickets t
+                ON t.first_responder_id = e.id
+                AND t.opened_at >= DATE_TRUNC('month', CURRENT_DATE)
+            GROUP BY e.id, e.full_name, e.username
+            ORDER BY answered_tickets DESC
+            """
+        )
+
+        sla_violations = await conn.fetchval(
+            """
+            SELECT COUNT(*)
+            FROM tickets
+            WHERE sla_notified = TRUE
+              AND opened_at >= DATE_TRUNC('month', CURRENT_DATE)
+            """
+        )
+
+        total_tickets = await conn.fetchval(
+            """
+            SELECT COUNT(*)
+            FROM tickets
+            WHERE opened_at >= DATE_TRUNC('month', CURRENT_DATE)
+            """
+        )
+
+        return employees, sla_violations, total_tickets
