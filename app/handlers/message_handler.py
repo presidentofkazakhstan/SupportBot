@@ -37,11 +37,27 @@ async def statistics(message: Message):
     text += "👥 Ответы сотрудников:\n"
 
     for i, employee in enumerate(employees, start=1):
-        text += (
-            f"{i}. {employee['full_name']} — "
-            f"{employee['answered_tickets']}\n"
-        )
+        avg_seconds = employee["avg_response_seconds"]
 
+        if avg_seconds is not None:
+            avg_seconds = int(avg_seconds)
+
+            minutes = avg_seconds // 60
+            seconds = avg_seconds % 60
+
+            if minutes > 0:
+                avg_time = f"{minutes}м {seconds}с"
+            else:
+                avg_time = f"{seconds}с"
+        else:
+            avg_time = "нет данных"
+
+        text += (
+            f"{i}. {employee['full_name']} : "
+            f"{employee['answered_tickets']}\n"
+            f"   ⏱ Средний ответ: {avg_time}\n\n"
+        )
+    
     text += f"\n🔴 Нарушений: {sla_violations}"
 
     await message.answer(text)

@@ -197,7 +197,13 @@ async def get_statistics():
                 e.id,
                 e.full_name,
                 e.username,
-                COUNT(t.id) AS answered_tickets
+                COUNT(t.id) AS answered_tickets,
+                AVG(
+                    CASE
+                        WHEN t.sla_notified = FALSE
+                        THEN t.first_response_seconds
+                    END
+                ) AS avg_response_seconds
             FROM employees e
             LEFT JOIN tickets t
                 ON t.first_responder_id = e.id
