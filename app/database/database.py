@@ -41,7 +41,11 @@ async def create_ticket(chat_id, chat_title, first_message):
     return ticket_id
 
 
-async def update_first_response(ticket_id, response_time):
+async def update_first_response(
+    ticket_id,
+    response_time,
+    employee_id
+):
     async with pool.acquire() as conn:
         await conn.execute(
             """
@@ -49,10 +53,12 @@ async def update_first_response(ticket_id, response_time):
             SET
                 first_response_at = NOW(),
                 first_response_seconds = $1,
+                first_responder_id = $2,
                 sla_completed = TRUE
-            WHERE id = $2
+            WHERE id = $3
             """,
             response_time,
+            employee_id,
             ticket_id,
         )
 
@@ -168,4 +174,16 @@ async def get_first_response_seconds(chat_id):
             LIMIT 1
             """,
             chat_id,
+        )
+    
+async def get_employee_by_telegram_id(telegram_id):
+    async with pool.acquire() as conn:
+        return await conn.fetchrow(
+            """
+            SELECT id
+            FROM employees
+            WHERE telegram_id = $1
+              AND is_active = TRUE
+            """,
+            telegram_id,
         )

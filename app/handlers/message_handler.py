@@ -11,6 +11,7 @@ from config.employees import SUPPORT_USERS
 from config.support import IGNORE_USERS
 from database.database import has_open_ticket
 from database.database import get_first_response_seconds
+from database.database import get_employee_by_telegram_id
 
 router = Router()
 
@@ -52,11 +53,25 @@ async def all_messages(message: Message):
             await update_last_activity(ticket["id"])
 
         if response_time is not None:
-            await update_first_response(
-                ticket["id"],
-                response_time
+            employee = await get_employee_by_telegram_id(
+                 message.from_user.id
             )
-            print(f"✅ Первый ответ ({response_time} сек.)")
+
+            if employee:
+                await update_first_response(
+                    ticket["id"],
+                    response_time,
+                    employee["id"]
+                )
+                print(
+                    f"✅ Первый ответ ({response_time} сек.) "
+                    f"сотрудник ID={employee['id']}"
+                )
+            else:
+                 print(
+                    f"⚠️ Сотрудник {message.from_user.id} "
+                    f"не найден в employees"
+                )
         else:
             print("💬 Ответ сотрудника")
 
