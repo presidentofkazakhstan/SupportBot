@@ -14,26 +14,30 @@ mentions = " ".join(SUPPORT_USERS.values())
 
 async def ticket_watcher():
     while True:
-        inactive = await get_inactive_tickets(AUTO_CLOSE_MINUTES)
+        try:
+            inactive = await get_inactive_tickets(AUTO_CLOSE_MINUTES)
+            for ticket in inactive:
+                await close_ticket(ticket["id"])
+                print(
+                    f"🔒 Обращение {ticket['id']} автоматически закрыто"
+                )
+            sla = await get_sla_violations(SLA_RESPONSE_MINUTES)
+            for ticket in sla:
+                await update_sla_notification(ticket["id"])
 
+                await bot.send_message(
+                    SUPPORT_CHAT_ID,
+                    f"🎫 Обращение #{ticket['id']}\n\n"
+                    f"🔴 Нет ответа\n\n"
+                    f"🏢 Клуб: {ticket['chat_title']}\n\n"
+                    f"💬 {ticket['first_message']}\n\n"
+                    f"👥 {mentions}"
+                )
 
-        for ticket in inactive:
-            await close_ticket(
-                ticket["id"]
+        except Exception as e:
+            print(
+                f"⚠️ Ошибка ticket_watcher: "
+                f"{type(e).__name__}: {e}"
             )
-            print(f"🔒 Обращение {ticket['id']}  автоматически закрыто")
-
-        sla = await get_sla_violations(SLA_RESPONSE_MINUTES)
-
-        for ticket in sla:
-            await update_sla_notification(ticket["id"])
-            await bot.send_message(
-                SUPPORT_CHAT_ID,
-                f"🎫 Обращение #{ticket['id']}\n\n"
-                f"🔴 Нет ответа\n\n"
-                f"🏢 Клуб: {ticket['chat_title']}\n\n"
-                f"💬 {ticket['first_message']}\n\n"
-                f"👥 {mentions}"
-)
 
         await asyncio.sleep(CHECK_INTERVAL_SECONDS)
