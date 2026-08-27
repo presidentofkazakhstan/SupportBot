@@ -16,7 +16,6 @@ async def ticket_watcher():
     while True:
         inactive = await get_inactive_tickets(AUTO_CLOSE_MINUTES)
 
-        inactive = await get_inactive_tickets(AUTO_CLOSE_MINUTES)
 
         for ticket in inactive:
             await close_ticket(

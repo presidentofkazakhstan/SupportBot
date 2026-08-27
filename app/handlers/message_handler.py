@@ -63,6 +63,14 @@ async def statistics(message: Message):
         )
     await message.answer(text)
 
+def is_thanks_message(text):
+    if not text:
+        return False
+
+    text = text.lower().strip()
+
+    return "спасибо" in text or "благодарю" in text
+
 @router.message()
 async def all_messages(message: Message):
     if (
@@ -129,6 +137,11 @@ async def all_messages(message: Message):
                 await update_last_activity(ticket["id"])
             print("💬 Сообщение в существующем обращении")
         else:
+            text = message.text or message.caption or ""
+
+            if is_thanks_message(text):
+                print("🙏 Благодарность клуба — новое обращение не создаём")
+                return
             if message.text:
                 first_message = message.text
             elif message.caption:
