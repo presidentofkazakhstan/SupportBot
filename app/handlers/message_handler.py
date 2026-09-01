@@ -100,7 +100,7 @@ async def all_messages(message: Message):
 
         response_time = None
 
-        if sla_ticket and not sla_ticket["sla_completed"]:
+        if sla_ticket:
             response_time = sla_ticket["response_time"]
 
         ticket = await get_open_ticket(chat_id)

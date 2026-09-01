@@ -54,8 +54,12 @@ async def update_first_response(
                 first_response_at = NOW(),
                 first_response_seconds = $1,
                 first_responder_id = $2,
-                sla_completed = TRUE
+                sla_completed = CASE
+                    WHEN sla_notified = FALSE THEN TRUE
+                    ELSE FALSE
+                END
             WHERE id = $3
+              AND first_response_at IS NULL
             """,
             response_time,
             employee_id,
@@ -165,11 +169,11 @@ async def get_first_response_seconds(chat_id):
             """
             SELECT
                 id,
-                EXTRACT(EPOCH FROM (NOW() - opened_at))::INT AS response_time,
-                sla_completed
+                EXTRACT(EPOCH FROM (NOW() - opened_at))::INT AS response_time
             FROM tickets
             WHERE chat_id = $1
               AND status = 'OPEN'
+              AND first_response_at IS NULL
             ORDER BY id DESC
             LIMIT 1
             """,
